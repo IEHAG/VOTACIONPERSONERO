@@ -1,28 +1,164 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Votación</title>
+    <title>Sistema de Votación - IE Héctor Abad Gómez</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Sistema de Votación</h1>
-        <div id="login">
-            <input type="text" id="username" placeholder="Ingrese su usuario">
-            <button onclick="login()">Ingresar</button>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="38" fill="#2980b9" stroke="#fff" stroke-width="2" />
+                    <text x="40" y="45" font-size="24" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif"
+                        font-weight="bold">HAG</text>
+                    <path d="M40 10 L40 20 M20 40 L10 40 M40 70 L40 60 M60 40 L70 40" stroke="#fff" stroke-width="3"
+                        stroke-linecap="round" />
+                </svg>
+                <div class="logo-text">
+                    <h1>I.E. Héctor Abad Gómez</h1>
+                    <div class="subtitle">Sistema de Votación Personería Estudiantil</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="mainContainer">
+        <div class="content" id="loginContent">
+            <h2 style="text-align: center; margin-bottom: 20px;">Ingreso de Estudiante</h2>
+            <div class="form-group">
+                <label for="studentId">Documento de Identidad:</label>
+                <input type="text" id="studentId" placeholder="Ingresa tu número de documento">
+                <div id="studentIdError" class="error-message">Este documento ya ha registrado un voto.</div>
+            </div>
+            <div class="form-group">
+                <label for="studentGrade">Grado:</label>
+                <select id="studentGrade">
+                    <option value="">Selecciona tu grado</option>
+                    <option value="6">Sexto</option>
+                    <option value="7">Séptimo</option>
+                    <option value="8">Octavo</option>
+                    <option value="9">Noveno</option>
+                    <option value="10">Décimo</option>
+                    <option value="11">Undécimo</option>
+                </select>
+            </div>
+            <div class="buttons">
+                <button id="loginBtn" class="btn btn-primary">Ingresar</button>
+                <button id="adminLoginBtn" class="btn btn-accent">Administrador</button>
+            </div>
         </div>
 
-        <div id="voting" style="display: none;">
-            <h2>Elige tu opción</h2>
-            <button onclick="vote('Opción 1')">Opción 1</button>
-            <button onclick="vote('Opción 2')">Opción 2</button>
-            <button onclick="vote('Opción 3')">Opción 3</button>
-            <button onclick="logout()">Salir</button>
+        <div class="content" id="votingContent" style="display: none;">
+            <div class="instructions">
+                <h2>Instrucciones para votar</h2>
+                <p class="step">1. Selecciona el candidato de tu preferencia haciendo clic en su tarjeta.</p>
+                <p class="step">2. Confirma tu elección haciendo clic en el botón "Votar".</p>
+                <p class="step">3. Una vez confirmado, tu voto quedará registrado en el sistema.</p>
+            </div>
+
+            <h2>Selecciona tu candidato:</h2>
+
+            <div class="candidates" id="candidatesList">
+                <!-- Los candidatos se cargarán dinámicamente con JavaScript -->
+            </div>
+
+            <div class="buttons">
+                <button id="voteBtn" class="btn btn-primary btn-disabled" disabled>Votar</button>
+                <button id="resetBtn" class="btn btn-accent">Reiniciar</button>
+                <button id="logoutBtn" class="btn btn-accent">Salir</button>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">✓</div>
+                <h2>¡Gracias por tu voto!</h2>
+                <p>Tu voto ha sido registrado correctamente en el sistema.</p>
+                <button id="finishVoteBtn" class="btn btn-primary" style="margin-top: 20px;">Finalizar</button>
+            </div>
+        </div>
+
+        <div class="content" id="adminPanel">
+            <div class="admin-header">
+                <h2>Panel de Administración</h2>
+            </div>
+
+            <div class="buttons" style="margin-bottom: 30px;">
+                <button id="showResultsBtn" class="btn btn-primary">Ver Resultados</button>
+                <button id="downloadResultsBtn" class="btn btn-primary">Descargar Resultados</button>
+                <button id="backToLoginBtn" class="btn btn-accent">Volver</button>
+            </div>
+
+            <div class="results-container" id="resultsContainer">
+                <div class="results-card">
+                    <h3 class="results-title">Resultados de la Votación</h3>
+                    <div id="resultsData">
+                        <!-- Los resultados se cargarán dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="results-card">
+                    <h3 class="results-title">Participación por Grado</h3>
+                    <div id="gradeParticipation">
+                        <!-- La participación por grado se cargará dinámicamente -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div id="confirmModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Confirma tu voto</h3>
+            <p>¿Estás seguro de que deseas votar por:</p>
+            <div class="selected-candidate" id="selectedCandidateConfirm">
+                <!-- Información del candidato seleccionado -->
+            </div>
+            <p>Una vez confirmado, no podrás cambiar tu elección.</p>
+            <div class="modal-buttons">
+                <button id="confirmVoteBtn" class="btn btn-primary">Confirmar voto</button>
+                <button id="cancelVoteBtn" class="btn btn-accent">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Acceso Administrador</h3>
+            <div class="form-group">
+                <label for="adminUsername">Usuario:</label>
+                <input type="text" id="adminUsername" placeholder="Usuario de administrador">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Contraseña:</label>
+                <input type="password" id="adminPassword" placeholder="Contraseña">
+                <div id="adminLoginError" class="error-message">Usuario o contraseña incorrectos.</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmAdminBtn" class="btn btn-primary">Acceder</button>
+                <button id="cancelAdminBtn" class="btn btn-accent">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Institución Educativa Héctor Abad Gómez - Sistema de Votación Personería Estudiantil</p>
+        </div>
+    </footer>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <!-- Firestore (the Firebase database) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
     
+    <!-- Script principal -->
     <script src="script.js"></script>
 </body>
+
 </html>
