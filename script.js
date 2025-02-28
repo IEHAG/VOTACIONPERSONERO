@@ -65,6 +65,7 @@ const studentId = document.getElementById('studentId');
 const studentGrade = document.getElementById('studentGrade');
 const loginBtn = document.getElementById('loginBtn');
 const adminLoginBtn = document.getElementById('adminLoginBtn');
+adminLoginBtn.addEventListener('click', showAdminModal);
 const studentIdError = document.getElementById('studentIdError');
 
 // Elementos DOM - Admin
@@ -376,4 +377,29 @@ async function loadResults() {
         // Cargar participación por grado
         const votesSnapshot = await votesRef.get();
         const gradeStats = {
-            6: 0, 7: 0,
+            6: 0,
+            7: 0,
+            8: 0,
+            9: 0,
+            10: 0,
+            11: 0
+        };
+
+        votesSnapshot.forEach(doc => {
+            const vote = doc.data();
+            if (vote.studentGrade in gradeStats) {
+                gradeStats[vote.studentGrade]++;
+            }
+        });
+
+        // Mostrar participación por grado
+        let participationHTML = '';
+        for (const grade in gradeStats) {
+            participationHTML += `<p>Grado ${grade}: ${gradeStats[grade]} votos</p>`;
+        }
+        gradeParticipation.innerHTML = participationHTML;
+
+    } catch (error) {
+        console.error('Error al cargar resultados:', error);
+    }
+}
