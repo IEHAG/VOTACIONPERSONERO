@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votación - IE Héctor Abad Gómez</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2980b9;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo img {
+            height: 80px;
+            margin-right: 15px;
+        }
+
+        .logo-text {
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: normal;
+        }
+
+        .content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: var(--light);
+            border-radius: 5px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .step {
+            margin-bottom: 10px;
+        }
+
+        .candidates {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .candidate-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-card.selected {
+            border: 3px solid var(--success);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .candidate-image {
+            height: 200px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .candidate-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .candidate-info {
+            padding: 15px;
+        }
+
+        .candidate-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .candidate-number {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .candidate-proposals {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #confirmModal,
+        #studentModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .selected-candidate {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--light);
+            border-radius: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 50px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .error-message {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .results-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-card {
+            background-color: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .result-bar {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 10px;
+        }
+
+        #adminPanel {
+            display: none;
+        }
+
+        .admin-header {
+            background-color: var(--accent);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .candidates {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="38" fill="#2980b9" stroke="#fff" stroke-width="2" />
+                    <text x="40" y="45" font-size="24" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif"
+                        font-weight="bold">HAG</text>
+                    <path d="M40 10 L40 20 M20 40 L10 40 M40 70 L40 60 M60 40 L70 40" stroke="#fff" stroke-width="3"
+                        stroke-linecap="round" />
+                </svg>
+                <div class="logo-text">
+                    <h1>I.E. Héctor Abad Gómez</h1>
+                    <div class="subtitle">Sistema de Votación Personería Estudiantil</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="mainContainer">
+        <div class="content" id="loginContent">
+            <h2 style="text-align: center; margin-bottom: 20px;">Ingreso de Estudiante</h2>
+            <div class="form-group">
+                <label for="studentId">Documento de Identidad:</label>
+                <input type="text" id="studentId" placeholder="Ingresa tu número de documento">
+                <div id="studentIdError" class="error-message">Este documento ya ha registrado un voto.</div>
+            </div>
+            <div class="form-group">
+                <label for="studentGrade">Grado:</label>
+                <select id="studentGrade">
+                    <option value="">Selecciona tu grado</option>
+                    <option value="6">Sexto</option>
+                    <option value="7">Séptimo</option>
+                    <option value="8">Octavo</option>
+                    <option value="9">Noveno</option>
+                    <option value="10">Décimo</option>
+                    <option value="11">Undécimo</option>
+                </select>
+            </div>
+            <div class="buttons">
+                <button id="loginBtn" class="btn btn-primary">Ingresar</button>
+                <button id="adminLoginBtn" class="btn btn-accent">Administrador</button>
+            </div>
+        </div>
+
+        <div class="content" id="votingContent" style="display: none;">
+            <div class="instructions">
+                <h2>Instrucciones para votar</h2>
+                <p class="step">1. Selecciona el candidato de tu preferencia haciendo clic en su tarjeta.</p>
+                <p class="step">2. Confirma tu elección haciendo clic en el botón "Votar".</p>
+                <p class="step">3. Una vez confirmado, tu voto quedará registrado en el sistema.</p>
+            </div>
+
+            <h2>Selecciona tu candidato:</h2>
+
+            <div class="candidates" id="candidatesList">
+                <!-- Los candidatos se cargarán dinámicamente con JavaScript -->
+            </div>
+
+            <div class="buttons">
+                <button id="voteBtn" class="btn btn-primary btn-disabled" disabled>Votar</button>
+                <button id="resetBtn" class="btn btn-accent">Reiniciar</button>
+                <button id="logoutBtn" class="btn btn-accent">Salir</button>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">✓</div>
+                <h2>¡Gracias por tu voto!</h2>
+                <p>Tu voto ha sido registrado correctamente en el sistema.</p>
+                <button id="finishVoteBtn" class="btn btn-primary" style="margin-top: 20px;">Finalizar</button>
+            </div>
+        </div>
+
+        <div class="content" id="adminPanel">
+            <div class="admin-header">
+                <h2>Panel de Administración</h2>
+            </div>
+
+            <div class="buttons" style="margin-bottom: 30px;">
+                <button id="showResultsBtn" class="btn btn-primary">Ver Resultados</button>
+                <button id="downloadResultsBtn" class="btn btn-primary">Descargar Resultados</button>
+                <button id="backToLoginBtn" class="btn btn-accent">Volver</button>
+            </div>
+
+            <div class="results-container" id="resultsContainer">
+                <div class="results-card">
+                    <h3 class="results-title">Resultados de la Votación</h3>
+                    <div id="resultsData">
+                        <!-- Los resultados se cargarán dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="results-card">
+                    <h3 class="results-title">Participación por Grado</h3>
+                    <div id="gradeParticipation">
+                        <!-- La participación por grado se cargará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Confirma tu voto</h3>
+            <p>¿Estás seguro de que deseas votar por:</p>
+            <div class="selected-candidate" id="selectedCandidateConfirm">
+                <!-- Información del candidato seleccionado -->
+            </div>
+            <p>Una vez confirmado, no podrás cambiar tu elección.</p>
+            <div class="modal-buttons">
+                <button id="confirmVoteBtn" class="btn btn-primary">Confirmar voto</button>
+                <button id="cancelVoteBtn" class="btn btn-accent">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Acceso Administrador</h3>
+            <div class="form-group">
+                <label for="adminUsername">Usuario:</label>
+                <input type="text" id="adminUsername" placeholder="Usuario de administrador">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Contraseña:</label>
+                <input type="password" id="adminPassword" placeholder="Contraseña">
+                <div id="adminLoginError" class="error-message">Usuario o contraseña incorrectos.</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmAdminBtn" class="btn btn-primary">Acceder</button>
+                <button id="cancelAdminBtn" class="btn btn-accent">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Institución Educativa Héctor Abad Gómez - Sistema de Votación Personería Estudiantil</p>
+        </div>
+    </footer>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <!-- Firestore (the Firebase database) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgE9a4V6e_mizibMPCitbWEdgPKL_yEFM",
+            authDomain: "sistema-votacion-hag.firebaseapp.com",
+            projectId: "sistema-votacion-hag",
+            storageBucket: "sistema-votacion-hag.firebasestorage.app",
+            messagingSenderId: "68354077419",
+            appId: "1:68354077419:web:ed88361c9a4411f702c4ae",
+
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Referencias a Firestore
+        const db = firebase.firestore();
+        const candidatesRef = db.collection('candidates');
+        const votesRef = db.collection('votes');
+        const studentsRef = db.collection('students');
+
+        // Datos de los candidatos (en una aplicación real, estos vendrían de Firestore)
+        const candidates = [
+            {
+                id: 1,
+                name: "Ana María Rodríguez",
+                number: "01",
+                image: "/api/placeholder/300/200",
+                proposals: "Mejorar las zonas verdes, implementar programas de reciclaje, fortalecer el consejo estudiantil."
+            },
+            {
+                id: 2,
+                name: "Carlos Eduardo Martínez",
+                number: "02",
+                image: "/api/placeholder/300/200",
+                proposals: "Ampliar la biblioteca, organizar más eventos culturales, mejorar los espacios deportivos."
+            },
+            {
+                id: 3,
+                name: "Valentina Gómez Torres",
+                number: "03",
+                image: "/api/placeholder/300/200",
+                proposals: "Crear grupos de estudio, implementar un buzón de sugerencias, mejorar la comunicación institucional."
+            },
+            {
+                id: 4,
+                name: "Juan Pablo Sánchez",
+                number: "04",
+                image: "/api/placeholder/300/200",
+                proposals: "Organizar olimpiadas deportivas, renovar los laboratorios, crear un periódico escolar."
+            }
+        ];
+
+        // Variables globales
+        let selectedCandidateId = null;
+        let currentStudentId = null;
+        let currentStudentGrade = null;
+        const adminCredentials = {
+            username: "admin",
+            password: "admin123"
+        };
+
+        // Elementos DOM - Login
+        const loginContent = document.getElementById('loginContent');
+        const votingContent = document.getElementById('votingContent');
+        const studentId = document.getElementById('studentId');
+        const studentGrade = document.getElementById('studentGrade');
+        const loginBtn = document.getElementById('loginBtn');
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        const studentIdError = document.getElementById('studentIdError');
+
+        // Elementos DOM - Admin
+        const adminPanel = document.getElementById('adminPanel');
+        const studentModal = document.getElementById('studentModal');
+        const adminUsername = document.getElementById('adminUsername');
+        const adminPassword = document.getElementById('adminPassword');
+        const adminLoginError = document.getElementById('adminLoginError');
+        const confirmAdminBtn = document.getElementById('confirmAdminBtn');
+        const cancelAdminBtn = document.getElementById('cancelAdminBtn');
+        const showResultsBtn = document.getElementById('showResultsBtn');
+        const downloadResultsBtn = document.getElementById('downloadResultsBtn');
+        const backToLoginBtn = document.getElementById('backToLoginBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsData = document.getElementById('resultsData');
+        const gradeParticipation = document.getElementById('gradeParticipation');
+
+        // Elementos DOM - Votación
+        const candidatesList = document.getElementById('candidatesList');
+        const voteBtn = document.getElementById('voteBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const confirmModal = document.getElementById('confirmModal');
+        const selectedCandidateConfirm = document.getElementById('selectedCandidateConfirm');
+        const confirmVoteBtn = document.getElementById('confirmVoteBtn');
+        const cancelVoteBtn = document.getElementById('cancelVoteBtn');
+        const successMessage = document.getElementById('successMessage');
+        const finishVoteBtn = document.getElementById('finishVoteBtn');
+
+        // Iniciar Firebase con datos de candidatos
+        async function initializeFirebase() {
+            try {
+                // Comprobar si los candidatos ya existen
+                const snapshot = await candidatesRef.get();
+                if (snapshot.empty) {
+                    // Si no existen, agregar los candidatos iniciales
+                    for (const candidate of candidates) {
+                        await candidatesRef.doc(candidate.id.toString()).set({
+                            name: candidate.name,
+                            number: candidate.number,
+                            image: candidate.image,
+                            proposals: candidate.proposals,
+                            votes: 0
+                        });
+                    }
+                    console.log('Candidatos inicializados correctamente');
+                }
+            } catch (error) {
+                console.error('Error al inicializar Firebase:', error);
+            }
+        }
+
+        // Cargar candidatos desde Firestore
+        async function loadCandidatesFromDB() {
+            try {
+                candidatesList.innerHTML = '';
+                const snapshot = await candidatesRef.get();
+
+                snapshot.forEach(doc => {
+                    const candidate = doc.data();
+                    const candidateId = doc.id;
+
+                    const candidateCard = document.createElement('div');
+                    candidateCard.className = 'candidate-card';
+                    candidateCard.dataset.id = candidateId;
+
+                    candidateCard.innerHTML = `
+                        <div class="candidate-image">
+                            <img src="${candidate.image}" alt="Foto de ${candidate.name}">
+                        </div>
+                        <div class="candidate-info">
+                            <div class="candidate-name">${candidate.name}</div>
+                            <div class="candidate-number">Tarjetón No. ${candidate.number}</div>
+                            <div class="candidate-proposals">
+                                <strong>Propuestas:</strong>
+                                <p>${candidate.proposals}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    candidateCard.addEventListener('click', () => selectCandidate(candidateId));
+                    candidatesList.appendChild(candidateCard);
+                });
+            } catch (error) {
+                console.error('Error al cargar candidatos:', error);
+            }
+        }
+
+        // Verificar si el estudiante ya votó
+        async function checkIfStudentVoted(studentId) {
+            try {
+                const snapshot = await studentsRef.doc(studentId).get();
+                return snapshot.exists && snapshot.data().hasVoted;
+            } catch (error) {
+                console.error('Error al verificar el estudiante:', error);
+                return false;
+            }
+        }
+
+        // Iniciar sesión de estudiante
+        async function loginStudent() {
+            const id = studentId.value.trim();
+            const grade = studentGrade.value;
+
+            if (!id || !grade) {
+                alert('Por favor ingresa tu documento de identidad y selecciona tu grado.');
+                return;
+            }
+
+            // Verificar si el estudiante ya votó
+            const hasVoted = await checkIfStudentVoted(id);
+            if (hasVoted) {
+                studentIdError.style.display = 'block';
+                return;
+            }
+
+            // Guardar información del estudiante actual
+            currentStudentId = id;
+            currentStudentGrade = grade;
+
+            // Ocultar login y mostrar votación
+            loginContent.style.display = 'none';
+            votingContent.style.display = 'block';
+
+            // Cargar candidatos
+            loadCandidatesFromDB();
+        }
+
+        // Seleccionar candidato
+        function selectCandidate(id) {
+            // Eliminar selección anterior
+            const previousSelected = document.querySelector('.candidate-card.selected');
+            if (previousSelected) {
+                previousSelected.classList.remove('selected');
+            }
+
+            // Seleccionar nuevo candidato
+            const candidateCard = document.querySelector(`.candidate-card[data-id="${id}"]`);
+            candidateCard.classList.add('selected');
+
+            // Actualizar el ID seleccionado
+            selectedCandidateId = id;
+
+            // Habilitar el botón de votar
+            voteBtn.classList.remove('btn-disabled');
+            voteBtn.disabled = false;
+        }
+
+        // Mostrar modal de confirmación
+        async function showConfirmModal() {
+            if (!selectedCandidateId) return;
+
+            try {
+                const candidateDoc = await candidatesRef.doc(selectedCandidateId).get();
+                const candidate = candidateDoc.data();
+
+                selectedCandidateConfirm.innerHTML = `
+                    <strong>${candidate.name}</strong><br>
+                    Tarjetón No. ${candidate.number}
+                `;
+
+                confirmModal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error al mostrar confirmación:', error);
+            }
+        }
+
+        // Registrar voto en Firebase
+        async function registerVote() {
+            try {
+                // Incrementar el contador de votos del candidato
+                const candidateRef = candidatesRef.doc(selectedCandidateId);
+                await db.runTransaction(async (transaction) => {
+                    const candidateDoc = await transaction.get(candidateRef);
+                    const currentVotes = candidateDoc.data().votes || 0;
+                    transaction.update(candidateRef, { votes: currentVotes + 1 });
+                });
+
+                // Guardar registro del voto
+                await votesRef.add({
+                    candidateId: selectedCandidateId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    studentGrade: currentStudentGrade
+                });
+
+                // Marcar al estudiante como votante
+                await studentsRef.doc(currentStudentId).set({
+                    hasVoted: true,
+                    grade: currentStudentGrade,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Ocultar el modal y el contenido de votación
+                confirmModal.style.display = 'none';
+                document.querySelector('.instructions').style.display = 'none';
+                document.querySelector('h2').style.display = 'none';
+                candidatesList.style.display = 'none';
+                document.querySelector('.buttons').style.display = 'none';
+
+                // Mostrar mensaje de éxito
+                successMessage.style.display = 'block';
+
+                console.log(`Voto registrado para el candidato ID: ${selectedCandidateId}`);
+            } catch (error) {
+                console.error('Error al registrar voto:', error);
+                alert('Error al registrar el voto. Por favor intenta nuevamente.');
+            }
+        }
+
+        // Finalizar votación
+        function finishVoting() {
+            // Resetear variables
+            currentStudentId = null;
+            currentStudentGrade = null;
+            selectedCandidateId = null;
+
+            // Ocultar votación y mostrar login
+            votingContent.style.display = 'none';
+            loginContent.style.display = 'block';
+
+            // Resetear formulario
+            studentId.value = '';
+            studentGrade.value = '';
+            studentIdError.style.display = 'none';
+
+            // Ocultar mensaje de éxito
+            successMessage.style.display = 'none';
+
+            // Mostrar elementos de votación
+            document.querySelector('.instructions').style.display = 'block';
+            document.querySelector('h2').style.display = 'block';
+            candidatesList.style.display = 'grid';
+            document.querySelector('.buttons').style.display = 'flex';
+
+            // Deshabilitar botón de votar
+            voteBtn.classList.add('btn-disabled');
+            voteBtn.disabled = true;
+        }
+
+        // Mostrar modal de administrador
+        function showAdminModal() {
+            adminUsername.value = '';
+            adminPassword.value = '';
+            adminLoginError.style.display = 'none';
+            studentModal.style.display = 'flex';
+        }
+
+        // Iniciar sesión de administrador
+        function loginAdmin() {
+            const username = adminUsername.value.trim();
+            const password = adminPassword.value.trim();
+
+            if (username === adminCredentials.username && password === adminCredentials.password) {
+                // Cerrar modal
+                studentModal.style.display = 'none';
+
+                // Mostrar panel de administrador
+                loginContent.style.display = 'none';
+                votingContent.style.display = 'none';
+                adminPanel.style.display = 'block';
+            } else {
+                adminLoginError.style.display = 'block';
+            }
+        }
+
+        // Cargar resultados
+        async function loadResults() {
+            try {
+                const candidatesSnapshot = await candidatesRef.get();
+                let totalVotes = 0;
+                let candidatesResults = [];
+
+                // Obtener votos por candidato
+                candidatesSnapshot.forEach(doc => {
+                    const candidate = doc.data();
+                    totalVotes += candidate.votes || 0;
+                    candidatesResults.push({
+                        id: doc.id,
+                        name: candidate.name,
+                        number: candidate.number,
+                        votes: candidate.votes || 0
+                    });
+                });
+
+                // ...existing code...
+
+                // Continuar la función loadResults
+                // Ordenar candidatos por número de votos
+                candidatesResults.sort((a, b) => b.votes - a.votes);
+
+                // Generar HTML de resultados
+                let resultsHTML = '';
+                candidatesResults.forEach(candidate => {
+                    const percentage = totalVotes > 0 ? ((candidate.votes / totalVotes) * 100).toFixed(1) : 0;
+                    resultsHTML += `
+                        <div class="result-item">
+                            <div>
+                                <strong>${candidate.name}</strong> (Tarjetón No. ${candidate.number})
+                                <div class="result-bar-container">
+                                    <div class="result-bar" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <strong>${candidate.votes}</strong> votos (${percentage}%)
+                            </div>
+                        </div>
+                    `;
+                });
+
+                resultsData.innerHTML = resultsHTML;
+
+                // Cargar participación por grado
+                const votesSnapshot = await votesRef.get();
+                const gradeStats = {
+                    6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0
+                };
+
+                votesSnapshot.forEach(doc => {
+                    const grade = doc.data().studentGrade;
+                    if (grade in gradeStats) {
+                        gradeStats[grade]++;
+                    }
+                });
+
+                let gradeHTML = '';
+                for (const [grade, votes] of Object.entries(gradeStats)) {
+                    gradeHTML += `
+                        <div class="result-item">
+                            <div>Grado ${grade}°</div>
+                            <div><strong>${votes}</strong> votos</div>
+                        </div>
+                    `;
+                }
+
+                gradeParticipation.innerHTML = gradeHTML;
+                resultsContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error al cargar resultados:', error);
+                alert('Error al cargar los resultados');
+            }
+        }
+
+        // Descargar resultados en CSV
+        function downloadResults() {
+            const resultsData = document.getElementById('resultsData');
+            const rows = [['Candidato', 'Número', 'Votos', 'Porcentaje']];
+
+            const resultItems = resultsData.querySelectorAll('.result-item');
+            resultItems.forEach(item => {
+                const name = item.querySelector('strong').textContent;
+                const number = item.textContent.match(/Tarjetón No\. (\d+)/)[1];
+                const votes = item.textContent.match(/(\d+) votos/)[1];
+                const percentage = item.textContent.match(/\((\d+\.?\d*)%\)/)[1];
+
+                rows.push([name, number, votes, percentage]);
+            });
+
+            const csvContent = rows.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'resultados_votacion.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Firebase y cargar datos iniciales
+            initializeFirebase();
+
+            // Login de estudiante
+            loginBtn.addEventListener('click', loginStudent);
+
+            // Votación
+            voteBtn.addEventListener('click', showConfirmModal);
+            resetBtn.addEventListener('click', () => {
+                selectedCandidateId = null;
+                const selected = document.querySelector('.candidate-card.selected');
+                if (selected) selected.classList.remove('selected');
+                voteBtn.classList.add('btn-disabled');
+                voteBtn.disabled = true;
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que deseas salir?')) {
+                    finishVoting();
+                }
+            });
+
+            // Confirmación de voto
+            confirmVoteBtn.addEventListener('click', registerVote);
+            cancelVoteBtn.addEventListener('click', () => {
+                confirmModal.style.display = 'none';
+            });
+
+            finishVoteBtn.addEventListener('click', finishVoting);
+
+            // Admin
+            adminLoginBtn.addEventListener('click', showAdminModal);
+            confirmAdminBtn.addEventListener('click', loginAdmin);
+            cancelAdminBtn.addEventListener('click', () => {
+                studentModal.style.display = 'none';
+            });
+
+            showResultsBtn.addEventListener('click', loadResults);
+            downloadResultsBtn.addEventListener('click', downloadResults);
+            backToLoginBtn.addEventListener('click', () => {
+                adminPanel.style.display = 'none';
+                loginContent.style.display = 'block';
+            });
+
+            // Cerrar modales al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                if (e.target === confirmModal) {
+                    confirmModal.style.display = 'none';
+                }
+                if (e.target === studentModal) {
+                    studentModal.style.display = 'none';
+                }
+            });
+        });
